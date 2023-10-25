@@ -17,3 +17,5 @@ Solution uses Translator and Speech services. The current solution pulls values 
 - **TRANSLATOR_ENDPOINT**
 - **SPEECH_SERVICE_REGION**
 - **SPEECH_TEXT_RESOURCE_KEY**
+
+  ![Picture of Application](/TranscriptionApp/Assets/app.png)
