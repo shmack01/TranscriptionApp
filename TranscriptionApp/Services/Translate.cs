@@ -45,8 +45,11 @@ namespace TranscriptionApp.Services
         private const string key_var = "TRANSLATOR_TEXT_RESOURCE_KEY";
         private const string endpoint_var = "TRANSLATOR_TEXT_ENDPOINT";
         private static readonly string region = Environment.GetEnvironmentVariable(region_var);
-        private static readonly string resourceKey = Environment.GetEnvironmentVariable(key_var);           
+        private static readonly string resourceKey = Environment.GetEnvironmentVariable(key_var);
         private static readonly string endpoint = Environment.GetEnvironmentVariable(endpoint_var);
+
+
+
 
         static Translate()
         {

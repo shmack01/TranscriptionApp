@@ -33,6 +33,7 @@ using System.Text;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Microsoft.CognitiveServices.Speech;
+using Microsoft.CognitiveServices.Speech.Audio;
 using System.Threading.Tasks;
 using System.Net;
 using TranscriptionApp.Services;
@@ -41,6 +42,9 @@ using Windows.Globalization;
 using System.Net.Http;
 using System.Collections.ObjectModel;
 using Windows.Security.Cryptography.Core;
+using Windows.Storage.Pickers;
+using Windows.Storage;
+using Microsoft.CognitiveServices.Speech.Audio;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -62,6 +66,8 @@ namespace TranscriptionApp
         private static readonly string resourceKey = Environment.GetEnvironmentVariable(key_var);
 
 
+
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -77,6 +83,8 @@ namespace TranscriptionApp
 
             StopSpeechRecognitionButton.IsEnabled = false;
             SpeechRecognitionButton.IsEnabled = true;
+            infoBar.Message = "Enable Microphone before starting Starting Speech Recognition";
+            infoBar.Severity = InfoBarSeverity.Warning;
         }
 
         public ObservableCollection<Services.Language> Languages { get; set; }
@@ -86,28 +94,40 @@ namespace TranscriptionApp
         public bool SpeechEnabled { get; set; }
         private async void EnableMicrophone_ButtonClicked(object sender, RoutedEventArgs e)
         {
-            bool isMicAvailable = true;
+            bool isMicAvailable = EnableMicrophoneButton.IsChecked.Value;// true;
             try
             {
-                var mediaCapture = new Windows.Media.Capture.MediaCapture();
-                var settings = new Windows.Media.Capture.MediaCaptureInitializationSettings();
-                settings.StreamingCaptureMode = Windows.Media.Capture.StreamingCaptureMode.Audio;
-                await mediaCapture.InitializeAsync(settings);
+                if (isMicAvailable)
+                {
+                    var mediaCapture = new Windows.Media.Capture.MediaCapture();
+                    var settings = new Windows.Media.Capture.MediaCaptureInitializationSettings();
+                    settings.StreamingCaptureMode = Windows.Media.Capture.StreamingCaptureMode.Audio;
+                    await mediaCapture.InitializeAsync(settings);
+                }
             }
             catch (Exception)
             {
                 isMicAvailable = false;
+                await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-microphone"));
             }
             if (!isMicAvailable)
             {
-                await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-microphone"));
+                StopSpeechRecognition();
+                SpeechRecognitionButton.IsEnabled = false;
             }
             else
             {
-                NotifyUser("Microphone was enabled", NotifyType.StatusMessage);
+                //Todo: update async
+                infoBar.Severity = InfoBarSeverity.Informational;
+                infoBar.Message = "Microphone was enabled";
+
             }
         }
         private async void StopSpeechRecognitionFromMicrophone_ButtonClicked(object sender, RoutedEventArgs e)
+        {
+            StopSpeechRecognition();
+        }
+        void StopSpeechRecognition()
         {
             StopSpeechRecognitionButton.IsEnabled = false;
             SpeechRecognitionButton.IsEnabled = true;
@@ -116,7 +136,6 @@ namespace TranscriptionApp
                 stopRecognition.TrySetResult(0);
 
             }
-
         }
 
         private async void SpeechRecognitionFromMicrophone_ButtonClicked(object sender, RoutedEventArgs e)
@@ -129,100 +148,111 @@ namespace TranscriptionApp
             //TODO: Work out issues with binding to a property
             SpeechRecognitionButton.IsEnabled = false;
             StopSpeechRecognitionButton.IsEnabled = true;
-
             // </create_speech_configuration>
 
             // <skeleton_2>
             try
             {
+                NotifyUser("Starting Speech Recognition from microphone", NotifyType.StatusMessage);
+
                 // </skeleton_2>
                 // <create_speech_recognizer_1>
                 // Creates a speech recognizer using microphone as audio input.
                 using (var recognizer = new SpeechRecognizer(config))
                 {
-                    StringBuilder sb = new StringBuilder();
-                    // The TaskCompletionSource to stop recognition.
-                    stopRecognition = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    // Subscribes to events.
-                    recognizer.Recognizing += (s, e) =>
-                    {
-                        // Console.WriteLine($"RECOGNIZING: Text={e.Result.Text}");
-                        sb.Clear();
-                    };
-
-                    recognizer.Recognized += (s, e) =>
-                    {
-                        if (e.Result.Reason == ResultReason.RecognizedIntent)
-                        {
-                            Console.WriteLine($"RECOGNIZED: Text={e.Result.Text}");
-
-                        }
-                        else if (e.Result.Reason == ResultReason.RecognizedSpeech)
-                        {
-                            sb.AppendLine($"RECOGNIZED: Text={e.Result.Text}");
-                            NotifyUser(sb.ToString(), NotifyType.StatusMessage);
-                        }
-                        else if (e.Result.Reason == ResultReason.NoMatch)
-                        {
-                            Console.WriteLine($"NOMATCH: Speech could not be recognized.");
-                        }
-                    };
-
-                    recognizer.Canceled += (s, e) =>
-                    {
-                        Console.WriteLine($"CANCELED: Reason={e.Reason}");
-
-                        if (e.Reason == CancellationReason.Error)
-                        {
-                            Console.WriteLine($"CANCELED: ErrorCode={e.ErrorCode}");
-                            Console.WriteLine($"CANCELED: ErrorDetails={e.ErrorDetails}");
-                            Console.WriteLine($"CANCELED: Did you update the subscription info?");
-                            var cancellation = CancellationDetails.FromResult(e.Result);
-                            sb.AppendLine($"CANCELED: Reason={cancellation.Reason}");
-
-                            if (cancellation.Reason == CancellationReason.Error)
-                            {
-                                sb.AppendLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
-                                sb.AppendLine($"CANCELED: ErrorDetails={cancellation.ErrorDetails}");
-                                sb.AppendLine($"CANCELED: Did you update the subscription info?");
-                            }
-                        }
-
-                        stopRecognition.TrySetResult(0);
-                    };
-
-                    recognizer.SessionStarted += (s, e) =>
-                    {
-                        Console.WriteLine("\n    Session started event.");
-                    };
-
-                    recognizer.SessionStopped += (s, e) =>
-                    {
-                        Console.WriteLine("\n    Session stopped event.");
-                        Console.WriteLine("\nStop recognition.");
-                        stopRecognition.TrySetResult(0);
-
-                    };
-
-                    // Update the UI
-                    NotifyUser(sb.ToString(), NotifyType.StatusMessage);
-
-                    // </print_results>
-                    // <create_speech_recognizer_2>
-                    await recognizer.StartContinuousRecognitionAsync().ConfigureAwait(false);
-                    Task.WaitAny(new[] { stopRecognition.Task });
-
-                    // Stops recognition.
-                    await recognizer.StopContinuousRecognitionAsync().ConfigureAwait(false);
+                    await StartSpeechProcessing(recognizer).ConfigureAwait(false);
                 }
-                // </create_speech_recognizer_2>
-                // <skeleton_3>
             }
             catch (Exception ex)
             {
-                NotifyUser($"Enable Microphone First.\n {ex.ToString()}", NotifyType.ErrorMessage);
+                infoBar.Severity = InfoBarSeverity.Error;
+                infoBar.Message = $"Enable Microphone First.\n {ex.ToString()}";
 
             }
+        }
+
+        private async Task StartSpeechProcessing(SpeechRecognizer recognizer)
+        {
+
+
+            StringBuilder sb = new StringBuilder();
+            // The TaskCompletionSource to stop recognition.
+            stopRecognition = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            // Subscribes to events.
+            recognizer.Recognizing += (s, e) =>
+            {
+                // Console.WriteLine($"RECOGNIZING: Text={e.Result.Text}");
+                sb.Clear();
+            };
+
+            recognizer.Recognized += (s, e) =>
+            {
+                if (e.Result.Reason == ResultReason.RecognizedIntent)
+                {
+                    Console.WriteLine($"RECOGNIZED: Text={e.Result.Text}");
+
+                }
+                else if (e.Result.Reason == ResultReason.RecognizedSpeech)
+                {
+                    sb.AppendLine($"RECOGNIZED: Text={e.Result.Text}");
+                    NotifyUser(sb.ToString(), NotifyType.StatusMessage);
+                }
+                else if (e.Result.Reason == ResultReason.NoMatch)
+                {
+                    Console.WriteLine($"NOMATCH: Speech could not be recognized.");
+                }
+            };
+
+            recognizer.Canceled += (s, e) =>
+            {
+                Console.WriteLine($"CANCELED: Reason={e.Reason}");
+
+                if (e.Reason == CancellationReason.Error)
+                {
+                    Console.WriteLine($"CANCELED: ErrorCode={e.ErrorCode}");
+                    Console.WriteLine($"CANCELED: ErrorDetails={e.ErrorDetails}");
+                    Console.WriteLine($"CANCELED: Did you update the subscription info?");
+                    var cancellation = CancellationDetails.FromResult(e.Result);
+                    sb.AppendLine($"CANCELED: Reason={cancellation.Reason}");
+
+                    if (cancellation.Reason == CancellationReason.Error)
+                    {
+                        sb.AppendLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
+                        sb.AppendLine($"CANCELED: ErrorDetails={cancellation.ErrorDetails}");
+                        sb.AppendLine($"CANCELED: Did you update the subscription info?");
+                    }
+                }
+
+                stopRecognition.TrySetResult(0);
+            };
+
+            recognizer.SessionStarted += (s, e) =>
+            {
+                Console.WriteLine("\n    Session started event.");
+            };
+
+            recognizer.SessionStopped += (s, e) =>
+            {
+                Console.WriteLine("\n    Session stopped event.");
+                Console.WriteLine("\nStop recognition.");
+                stopRecognition.TrySetResult(0);
+
+            };
+
+            // Update the UI
+            NotifyUser(sb.ToString(), NotifyType.StatusMessage);
+
+            // </print_results>
+            // <create_speech_recognizer_2>
+            await recognizer.StartContinuousRecognitionAsync().ConfigureAwait(false);
+            Task.WaitAny(new[] { stopRecognition.Task });
+
+            // Stops recognition.
+            await recognizer.StopContinuousRecognitionAsync().ConfigureAwait(false);
+
+            // </create_speech_recognizer_2>
+            // <skeleton_3>
+
         }
 
         private enum NotifyType
@@ -235,9 +265,10 @@ namespace TranscriptionApp
         {
             // If called from the UI thread, then update immediately.
             // Otherwise, schedule a task on the UI thread to perform the update
-            //var Dispatcher = Microsoft.UI.Xaml.Window.DispatcherQueue;// Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-
+            //UWP methods
+            // Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
             //var Dispatcher = Windows.UI.Threading.Dispatcher.CurrentDispatcher;
+
             if (DispatcherQueue.HasThreadAccess)//Dispatcher.HasThreadAccess)
             {
                 UpdateStatus(strMessage, type);
@@ -282,7 +313,7 @@ namespace TranscriptionApp
             if (!String.IsNullOrEmpty(strMessage))
             {
                 string translatedTxt = await TranslateAsync(strMessage);
-                TranslateBlock.Text += string.IsNullOrEmpty(TranslateBlock.Text) ? translatedTxt :  translatedTxt;
+                TranslateBlock.Text += string.IsNullOrEmpty(TranslateBlock.Text) ? translatedTxt : translatedTxt;
                 TranslateScroller.ScrollToVerticalOffset(TranslateScroller.ExtentHeight);
             }
 
@@ -346,6 +377,73 @@ namespace TranscriptionApp
         private void langFromcb_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ConvertFromLanguage = e.AddedItems[0] as Services.Language;
+        }
+        private async void PickAFileButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.ViewMode = PickerViewMode.Thumbnail;
+            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            openPicker.FileTypeFilter.Add(".wav");
+            //openPicker.FileTypeFilter.Add(".mp4");
+           // openPicker.FileTypeFilter.Add(".mp3");
+
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
+            StorageFile file = await openPicker.PickSingleFileAsync();
+            if (file != null)
+            {
+                // The StorageFile has read/write access to the picked file.
+                // See the FileAccess sample for code that uses a StorageFile to read and write.
+                infoBar.Severity = InfoBarSeverity.Informational;
+                infoBar.Message = "Speech Recognition for file:" + file.Path;
+                await SpeechRecognitionFromFile(file.Path);
+            }
+            else
+            {
+                infoBar.Severity = InfoBarSeverity.Warning;
+                infoBar.Message = "Operation cancelled.";
+
+            }
+        }
+        async Task SpeechRecognitionFromFile(string filePath)
+        {
+
+            //For compressed audio files such as MP4,
+            //install GStreamer and use PullAudioInputStream or PushAudioInputStream.
+            //For more information, see How to use compressed input audio.
+            //https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-use-codec-compressed-audio-input-streams?tabs=windows%2Cdebian%2Cjava-android%2Cterminal&pivots=programming-language-csharp
+            var config = SpeechConfig.FromSubscription(resourceKey, region);
+            PullAudioInputStream pullStream = null;
+            if ((new[] { ".mp3", ".mp4" }).Contains(System.IO.Path.GetExtension(filePath)))
+            {
+                //TODO:Troubleshoot
+                pullStream = new PullAudioInputStream(new BinaryAudioStreamReader(new BinaryReader(File.OpenRead(filePath))), AudioStreamFormat.GetCompressedFormat(AudioStreamContainerFormat.MP3));
+                //var pullStream2 = AudioInputStream.CreatePullStream(AudioStreamFormat.GetCompressedFormat(AudioStreamContainerFormat.OGG_OPUS));
+
+            }
+
+
+            using (var audioConfig = ((new[] { ".mp3", ".mp4" }).Contains(System.IO.Path.GetExtension(filePath))) ? AudioConfig.FromStreamInput(pullStream) : AudioConfig.FromWavFileInput(filePath))
+            {
+                using (var recognizer = new SpeechRecognizer(config, audioConfig))
+                {
+                    try
+                    {
+                        await StartSpeechProcessing(recognizer).ConfigureAwait(false);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        //NotifyUser($"Enable Microphone First.\n {ex.ToString()}", NotifyType.ErrorMessage);
+                        //TODO:infoBar
+
+                    }
+                }
+            }
+
+
+
         }
     }
 }
