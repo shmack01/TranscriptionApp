@@ -19,4 +19,4 @@ Solution uses Translator and Speech services. The current solution pulls values 
 - **SPEECH_SERVICE_REGION**
 - **SPEECH_TEXT_RESOURCE_KEY**
 
-  ![Picture of Application](/TranscriptionApp/Assets/app.png)
+  ![Picture of Application](/TranscriptionApp/Assets/app.jpg)
