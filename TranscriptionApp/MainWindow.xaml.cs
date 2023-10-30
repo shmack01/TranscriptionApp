@@ -65,8 +65,7 @@ namespace TranscriptionApp
         private static readonly string endpoint = Environment.GetEnvironmentVariable(endpoint_var);
         private static readonly string region = Environment.GetEnvironmentVariable(region_var);
         private static readonly string resourceKey = Environment.GetEnvironmentVariable(key_var);
-
-
+        
 
         public MainWindow()
         {
@@ -348,6 +347,7 @@ namespace TranscriptionApp
         {
             ObservableCollection<Services.Language> list = new ObservableCollection<Services.Language>();
             string result = String.Empty;
+            Services.LanguageResult deserializedOutput = null;
 
             string url = endpoint + LANGUAGES_ENDPOINT;
             //check if the environment variable is set
@@ -358,15 +358,18 @@ namespace TranscriptionApp
                 {
                     // Build the request.
                     request.Method = HttpMethod.Get;
-                    request.RequestUri = new Uri(url);
-
                     try
                     {
+                        request.RequestUri = new Uri(url);
+
+                   
                         // Send the request and get response.
                         HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
                         // Read response as a string.
                         result = await response.Content.ReadAsStringAsync();
-                    }catch (Exception ex)
+                        deserializedOutput = JsonConvert.DeserializeObject<LanguageResult>(result);
+                    }
+                    catch (Exception ex)
                     {
                         //Error with reaching out to endpoint. Will use the backup languages.json file
                         result = String.Empty;
@@ -374,6 +377,8 @@ namespace TranscriptionApp
 
                 }
             }
+
+
             if(String.IsNullOrEmpty(result))
             {
                 string sDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -381,10 +386,9 @@ namespace TranscriptionApp
 
                 //Closes file when completed
                 result = File.ReadAllText(fileName);
+                deserializedOutput = JsonConvert.DeserializeObject<LanguageResult>(result);
             }
             
-
-            Services.LanguageResult deserializedOutput = JsonConvert.DeserializeObject<LanguageResult>(result);
 
             foreach (var pair in deserializedOutput.Translation)
             {
