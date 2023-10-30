@@ -58,14 +58,16 @@ namespace TranscriptionApp
     public sealed partial class MainWindow : Window
     {
         //TODO
+        private static string LANGUAGES_ENDPOINT = @"languages?api-version=3.0";
         private static string endpoint_var = "TRANSLATOR_ENDPOINT";
         private const string region_var = "SPEECH_SERVICE_REGION";
         private const string key_var = "SPEECH_TEXT_RESOURCE_KEY";
-        private static readonly string endpoint = Environment.GetEnvironmentVariable(endpoint_var);
-        private static readonly string region = Environment.GetEnvironmentVariable(region_var);
-        private static readonly string resourceKey = Environment.GetEnvironmentVariable(key_var);
-
-
+        //private static readonly string endpoint = Environment.GetEnvironmentVariable(endpoint_var);
+        //private static readonly string region = Environment.GetEnvironmentVariable(region_var);
+        //private static readonly string resourceKey = Environment.GetEnvironmentVariable(key_var);
+        private static readonly string resourceKey = "7a53025fc3a04a4394514a2dced2a327";
+        private static readonly string region = "eastus";
+        private const string endpoint = "https://api.cognitive.microsofttranslator.com/";
 
 
         public MainWindow()
@@ -347,25 +349,53 @@ namespace TranscriptionApp
         static public async Task<ObservableCollection<Services.Language>> GetLanguages()
         {
             ObservableCollection<Services.Language> list = new ObservableCollection<Services.Language>();
-            using (var client = new HttpClient())
-            using (var request = new HttpRequestMessage())
+            string result = String.Empty;
+
+            string url = endpoint + LANGUAGES_ENDPOINT;
+            //check if the environment variable is set
+            if (!String.IsNullOrEmpty(endpoint))
             {
-                // Build the request.
-                request.Method = HttpMethod.Get;
-                request.RequestUri = new Uri(endpoint);
-
-                // Send the request and get response.
-                HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
-                // Read response as a string.
-                string result = await response.Content.ReadAsStringAsync();
-                Services.LanguageResult deserializedOutput = JsonConvert.DeserializeObject<LanguageResult>(result);
-
-                // Iterate over the deserialized results.
-                foreach (var pair in deserializedOutput.Translation)
+                using (var client = new HttpClient())
+                using (var request = new HttpRequestMessage())
                 {
-                    list.Add(new Services.Language { Name = pair.Value.Name, ShortName = pair.Key });
+                    // Build the request.
+                    request.Method = HttpMethod.Get;
+                    request.RequestUri = new Uri(url);
+
+                    try
+                    {
+                        // Send the request and get response.
+                        HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
+                        // Read response as a string.
+                        result = await response.Content.ReadAsStringAsync();
+                    }catch (Exception ex)
+                    {
+                        //Error with reaching out to endpoint. Will use the backup languages.json file
+                        result = String.Empty;
+                    }
+
                 }
             }
+            if(String.IsNullOrEmpty(result))
+            {
+                string sDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string fileName = System.IO.Path.Combine(sDirectory, "Assets/languages.json");
+
+                //Closes file when completed
+                result = File.ReadAllText(fileName);
+            }
+            
+
+            Services.LanguageResult deserializedOutput = JsonConvert.DeserializeObject<LanguageResult>(result);
+
+            foreach (var pair in deserializedOutput.Translation)
+            {
+                list.Add(new Services.Language { Name = pair.Value.Name, ShortName = pair.Key });
+            }
+            /*
+            //LOW SIDE
+            
+            */
             return list;
         }
 

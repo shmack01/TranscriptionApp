@@ -43,12 +43,15 @@ namespace TranscriptionApp.Services
         private const string fromLanguage = "from={0}";
         private const string region_var = "TRANSLATOR_SERVICE_REGION";
         private const string key_var = "TRANSLATOR_TEXT_RESOURCE_KEY";
-        private const string endpoint_var = "TRANSLATOR_TEXT_ENDPOINT";
-        private static readonly string region = Environment.GetEnvironmentVariable(region_var);
-        private static readonly string resourceKey = Environment.GetEnvironmentVariable(key_var);
-        private static readonly string endpoint = Environment.GetEnvironmentVariable(endpoint_var);
+        public const string endpoint_var = "TRANSLATOR_ENDPOINT";
+        //private static readonly string region = Environment.GetEnvironmentVariable(region_var);
+        //private static readonly string resourceKey = Environment.GetEnvironmentVariable(key_var);
+        //private static readonly string endpoint = Environment.GetEnvironmentVariable(endpoint_var);
+        private static readonly string region = "eastus2";
+        private static readonly string resourceKey = "1f18ef7c46e646a3913647f025de8d6b";
 
-
+        private static readonly string endpoint = "https://api.cognitive.microsofttranslator.com/";
+        
 
 
         static Translate()
