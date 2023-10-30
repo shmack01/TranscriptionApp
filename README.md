@@ -1,6 +1,12 @@
 # TranscriptionApp
 WinUI 3  Windows Desktop Application for Speech-to-Text and Translation
 
+**TODO LIST**
+- Add saving to a file
+- Implement parsing MP3/4 files
+- Current parsing audio files status
+- 
+
 ## Get Started
 Solution uses Translator and Speech services. The current solution pulls values from Environment Variables. This will need to be updated for more secure method
 
