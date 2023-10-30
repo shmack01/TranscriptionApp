@@ -18,7 +18,7 @@ Solution uses Translator and Speech services. The current solution pulls values 
 - **SPEECH_SERVICE_REGION**
 - **SPEECH_TEXT_RESOURCE_KEY**
 
-##Deployment
+## Deployment
 Add the following lines to the **PropertyGroup** in the csproj file
 
 ```
