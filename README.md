@@ -12,11 +12,18 @@ Solution uses Translator and Speech services. The current solution pulls values 
 ### Translator
 - **TRANSLATOR_SERVICE_REGION**
 - **TRANSLATOR_TEXT_RESOURCE_KEY**
-- **TRANSLATOR_TEXT_ENDPOINT**
+- **TRANSLATOR_ENDPOINT** - with trailing slash, exactly like what is in the portal. 
 
 ### Speech
-- **TRANSLATOR_ENDPOINT**
 - **SPEECH_SERVICE_REGION**
 - **SPEECH_TEXT_RESOURCE_KEY**
+
+##Deployment
+Add the following lines to the **PropertyGroup** in the csproj file
+
+```
+	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	<WindowsPackageType>None</WindowsPackageType>
+```
 
   ![Picture of Application](/TranscriptionApp/Assets/app.jpg)
