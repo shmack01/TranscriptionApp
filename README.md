@@ -19,7 +19,7 @@ Solution uses Translator and Speech services. The current solution pulls values 
 - **SPEECH_TEXT_RESOURCE_KEY**
 
 ## Deployment
-Add the following lines to the **PropertyGroup** in the csproj file and then publish to folder. 
+Add the following lines to the **PropertyGroup** in the csproj file and then publish to folder. This will deploy all the Windows App SDK dlls with the the application. 
 
 ```
 	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
