@@ -27,7 +27,7 @@ Solution uses Translator and Speech services. The current solution pulls values 
 ## Deployment
 Ensure the following lines are added to the **PropertyGroup** in the csproj file and then publish to folder. This will deploy all the Windows App SDK and .NET dlls with the the application. 
 
-- (Prerequisites)[https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/deploy-unpackaged-apps#prerequisites]
+- [Prerequisites](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/deploy-unpackaged-apps#prerequisites)
 
 ```
 <SelfContained>true</SelfContained>
