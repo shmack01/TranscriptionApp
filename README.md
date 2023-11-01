@@ -13,7 +13,7 @@ Solution uses Translator and Speech services. The current solution pulls values 
 ### Requirements 
 - [Windows App SDK 1.4.231008000](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/system-requirements#windows-app-sdk)
 - [WinUI 3 for Visual Studio](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/system-requirements#visual-studio-support-for-winui-3-tools)
-- [Currently in development for mp3 and mp4 files]: Current solution will ingest .wav audio files - 16 kHz or 8 kHz, 16-bit, and mono PCM .
+- Current solution will ingest .wav audio files - 16 kHz or 8 kHz, 16-bit, and mono PCM .
     - For MP4 files, dependencies need to be installed. [For more information](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-use-codec-compressed-audio-input-streams?tabs=windows%2Cdebian%2Cjava-android%2Cterminal&pivots=programming-language-csharp)
 ### Translator
 - **TRANSLATOR_SERVICE_REGION**
