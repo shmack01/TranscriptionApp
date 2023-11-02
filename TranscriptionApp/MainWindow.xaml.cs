@@ -93,7 +93,7 @@ namespace TranscriptionApp
         public bool SpeechEnabled { get; set; }
         private async void EnableMicrophone_ButtonClicked(object sender, RoutedEventArgs e)
         {
-            bool isMicAvailable = EnableMicrophoneButton.IsChecked.Value;// true;
+            bool isMicAvailable = EnableMicrophoneButton.IsChecked.Value;
             try
             {
                 if (isMicAvailable)
@@ -362,7 +362,6 @@ namespace TranscriptionApp
                     {
                         request.RequestUri = new Uri(url);
 
-                   
                         // Send the request and get response.
                         HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
                         // Read response as a string.
@@ -394,10 +393,6 @@ namespace TranscriptionApp
             {
                 list.Add(new Services.Language { Name = pair.Value.Name, ShortName = pair.Key });
             }
-            /*
-            //LOW SIDE
-            
-            */
             return list;
         }
 
@@ -417,8 +412,8 @@ namespace TranscriptionApp
             openPicker.ViewMode = PickerViewMode.Thumbnail;
             openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
             openPicker.FileTypeFilter.Add(".wav");
-            //openPicker.FileTypeFilter.Add(".mp4");
-           // openPicker.FileTypeFilter.Add(".mp3");
+            openPicker.FileTypeFilter.Add(".mp4");
+            openPicker.FileTypeFilter.Add(".mp3");
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
@@ -447,11 +442,11 @@ namespace TranscriptionApp
             //https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-use-codec-compressed-audio-input-streams?tabs=windows%2Cdebian%2Cjava-android%2Cterminal&pivots=programming-language-csharp
             var config = SpeechConfig.FromSubscription(resourceKey, region);
             PullAudioInputStream pullStream = null;
+
+            //MP3/4 Files
             if ((new[] { ".mp3", ".mp4" }).Contains(System.IO.Path.GetExtension(filePath)))
             {
-                //TODO:Troubleshoot
-                pullStream = new PullAudioInputStream(new BinaryAudioStreamReader(new BinaryReader(File.OpenRead(filePath))), AudioStreamFormat.GetCompressedFormat(AudioStreamContainerFormat.MP3));
-                //var pullStream2 = AudioInputStream.CreatePullStream(AudioStreamFormat.GetCompressedFormat(AudioStreamContainerFormat.OGG_OPUS));
+                pullStream = AudioInputStream.CreatePullStream(new BinaryAudioStreamReader(new BinaryReader(File.OpenRead(filePath))), AudioStreamFormat.GetCompressedFormat(AudioStreamContainerFormat.ANY));
 
             }
 
@@ -467,8 +462,7 @@ namespace TranscriptionApp
                     }
                     catch (Exception ex)
                     {
-                        //NotifyUser($"Enable Microphone First.\n {ex.ToString()}", NotifyType.ErrorMessage);
-                        //TODO:infoBar
+                        NotifyUser($"Error with processing file.\n {filePath}", NotifyType.ErrorMessage);
 
                     }
                 }
