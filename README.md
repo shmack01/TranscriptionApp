@@ -2,7 +2,7 @@
 WinUI 3  Windows Desktop Application for Speech-to-Text and Translation
 
 **TODO LIST**
-- Add saving to a file
+- Add feature for saving to a file
 - Implement parsing MP3/4 files - **COMPLETED** Tested with v1.22.6
 - Current parsing audio files status
 - Test with large wav files, incorporate batch.
@@ -18,11 +18,14 @@ Solution uses Translator and Speech services. The current solution pulls values 
 ### Translator
 - **TRANSLATOR_SERVICE_REGION**
 - **TRANSLATOR_TEXT_RESOURCE_KEY**
-- **TRANSLATOR_ENDPOINT** - with trailing slash, exactly like what is in the portal. 
+- **TRANSLATOR_ENDPOINT** - with trailing slash, exactly like what is in the portal. e.g. https://{name}.cognitiveservices.azure.us/
 
 ### Speech
 - **SPEECH_SERVICE_REGION**
 - **SPEECH_TEXT_RESOURCE_KEY**
+- **SPEECH_ENDPOINT** -
+
+
 
 ## Deployment
 Ensure the following lines are added to the **PropertyGroup** in the csproj file and then publish to folder. This will deploy all the Windows App SDK and .NET dlls with the the application. 
@@ -30,7 +33,7 @@ Ensure the following lines are added to the **PropertyGroup** in the csproj file
 - [Prerequisites](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/deploy-unpackaged-apps#prerequisites)
     - .net 6 runtime
     - Windows App SDK runtime
-    - VC runtime
+    - Microsoft Visual C++ Redistributable
 ```
 <SelfContained>true</SelfContained>
 <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
