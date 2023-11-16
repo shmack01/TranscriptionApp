@@ -24,7 +24,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,7 +41,8 @@ namespace TranscriptionApp.Services
         private static bool AutoDetect { get; set; }
         //TODO: Modify to use more secure method
         // https://docs.microsoft.com/azure/cognitive-services/translator/reference/v3-0-translate
-        private static string route = "/translate?api-version=3.0&{0}&to={1}";
+        private static string route = "translator/text/v3.0/translate?{0}&to={1}";
+        //private static string route = "translate?api-version=3.0&{0}&to={1}";
         private const string fromLanguage = "from={0}";
         private const string region_var = "TRANSLATOR_SERVICE_REGION";
         private const string key_var = "TRANSLATOR_TEXT_RESOURCE_KEY";
@@ -77,7 +80,14 @@ namespace TranscriptionApp.Services
             object[] body = new object[] { new { Text = inputText } };
             var requestBody = JsonConvert.SerializeObject(body);
 
-            using (var client = new HttpClient())
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
+
+            using HttpClientHandler httpClientHandler = new();
+
+            httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true;//For testing
+            httpClientHandler.SslProtocols = SslProtocols.Tls12;//For testing
+
+            using (var client = new HttpClient(httpClientHandler))
             using (var request = new HttpRequestMessage())
             {
                 // Build the request.

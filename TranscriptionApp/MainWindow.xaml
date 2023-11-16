@@ -49,7 +49,7 @@ Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" />
 Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Bottom"/>-->
             <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Left">
                 <CommandBar x:Name="MainCommandBar" DefaultLabelPosition="Right"                     
-                            Foreground="White">
+                            Foreground="White" HorizontalAlignment="Right">
                     <CommandBar.CommandBarOverflowPresenterStyle>
                         <Style TargetType="CommandBarOverflowPresenter">
                             <Setter Property="Background"
@@ -57,19 +57,21 @@ Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Bottom"/>-->
                         </Style>
                     </CommandBar.CommandBarOverflowPresenterStyle>
 
-                    <AppBarButton Icon="OpenFile" Foreground="AntiqueWhite"
+                    <!--<AppBarButton Icon="OpenFile" Foreground="White"
+      Label="Storage" Click="UseStorageButton_Click"/>-->
+                    <AppBarButton Icon="OpenFile" Foreground="White"
                           Label="Audio File" Click="PickAFileButton_Click"/>
                     <AppBarSeparator Foreground="AntiqueWhite" Margin="0,0,5,0"/>
-                    <AppBarElementContainer VerticalAlignment="Center" Foreground="White">
-                        <TextBlock Text="Speech Recognition " Margin="0"/>
+                    <AppBarElementContainer VerticalAlignment="Center" Foreground="Gold">
+                        <TextBlock Text="Microphone " Margin="0"/>
                     </AppBarElementContainer>
                     <AppBarToggleButton Icon="Microphone" Foreground="White" x:Name="EnableMicrophoneButton"  Click="EnableMicrophone_ButtonClicked"/>
                     <AppBarButton Icon="Play" Label="Start" Foreground="White" x:Name="SpeechRecognitionButton" IsEnabled="{x:Bind EnableMicrophoneButton.IsChecked.Value.Equals(x:True),Mode=OneWay}" Click="SpeechRecognitionFromMicrophone_ButtonClicked"/>
                     <AppBarButton Icon="Stop" Label="Stop"  Foreground="White" x:Name="StopSpeechRecognitionButton"  Click="StopSpeechRecognitionFromMicrophone_ButtonClicked" />
-                    
+
                     <AppBarSeparator Foreground="AntiqueWhite" Margin="0,0,5,0"/>
-                    <AppBarElementContainer VerticalAlignment="Center" Foreground="White">
-                        <TextBlock Text="Language " Margin="0"/>
+                    <AppBarElementContainer VerticalAlignment="Center" Foreground="Gold">
+                        <TextBlock Text="Language " Margin="0,5"/>
                     </AppBarElementContainer>
                     <AppBarToggleButton x:Name="autoDetectcheck" Icon="Target"  Label="Auto Detect" Foreground="White"/>
                     <AppBarElementContainer VerticalAlignment="Center" Foreground="White">
@@ -86,19 +88,24 @@ Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Bottom"/>-->
                         <ComboBox x:Name="langTocb"  DisplayMemberPath="{Binding Source=Name}"  SelectedItem="{Binding Source=ConvertToLanguage}" SelectionChanged="langTocb_SelectionChanged">
                         </ComboBox>
                     </AppBarElementContainer >
+                    
+                    
                     <CommandBar.Content>
-                        <TextBlock x:Name="commandBarText" Margin="12,14"/>
+                        <TextBlock x:Name="commandBarText" Margin="12,14" Text="Choose File" Width="100" Foreground="Gold"/>
                     </CommandBar.Content>
                 </CommandBar>
-               <!-- <CheckBox x:Name="autoDetectcheck">
-                    <TextBlock Foreground="White" Text="Auto Detect Language" />
-                </CheckBox>-->
             </StackPanel>
 
             <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"  Orientation="Vertical"  VerticalAlignment="Top" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignLeftWithPanel="True">
+                <StackPanel Orientation="Horizontal"  VerticalAlignment="Bottom" Width="Auto" >
 
-                <TextBlock x:Name="StatusLabel" Foreground="White" Margin="0,10,10,0" TextWrapping="Wrap" Text="Status:" FontSize="20"/>
-                <StackPanel x:Name="StatusPanel" Margin="10" Background="WhiteSmoke" Orientation="Vertical" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignLeftWithPanel="True">
+                    <TextBlock x:Name="StatusLabel" Width="Auto" VerticalAlignment="Bottom" Foreground="White" Margin="0,0,10,10" Text="Status:" FontSize="20" HorizontalAlignment="left" />
+                    <CommandBar Foreground="White"  HorizontalAlignment="Right" VerticalContentAlignment="Bottom" HorizontalContentAlignment="Right" Margin="0" DefaultLabelPosition="Right" VerticalAlignment="Bottom">
+                        <AppBarButton Icon="Clear" VerticalContentAlignment="Bottom" Label="Clear" VerticalAlignment="Bottom" Margin="0"/>
+                        <AppBarButton Icon="SaveLocal" Label="Save"  Foreground="White" x:Name="SaveToFileButton"  Click="SaveFileButton_Click" />
+                    </CommandBar>
+                </StackPanel>
+                <StackPanel x:Name="StatusPanel" Margin="10,0,10,10" Background="WhiteSmoke" Orientation="Vertical" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignLeftWithPanel="True">
 
                     <Border x:Name="StatusBorder" Margin="1"  BorderThickness="1" Background="WhiteSmoke">
                         <ScrollViewer x:Name="StatusScroller"  VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Auto" MaxHeight="200">
@@ -113,7 +120,7 @@ Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Bottom"/>-->
 
             </StackPanel>
             <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"   x:Name="TranslatePanel"  Orientation="Vertical" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignLeftWithPanel="True">
-                <TextBlock x:Name="TranslateLabel" Foreground="White" Margin="0,10,10,0" TextWrapping="Wrap" Text="Translation:" FontSize="20"/>
+                <TextBlock x:Name="TranslateLabel" Margin="10,0,10,10" Foreground="White"  TextWrapping="Wrap" Text="Translation:" FontSize="20"/>
                 <StackPanel  Margin="10" Orientation="Vertical" Background="WhiteSmoke" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignLeftWithPanel="True">
 
                     <Border x:Name="TranslateBorder" Margin="1" BorderBrush="Red" BorderThickness="0" Background="WhiteSmoke">

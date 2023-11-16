@@ -45,6 +45,8 @@ using Windows.Security.Cryptography.Core;
 using Windows.Storage.Pickers;
 using Windows.Storage;
 using Microsoft.CognitiveServices.Speech.Audio;
+using Microsoft.UI.Xaml.Documents;
+using Windows.Media.Streaming.Adaptive;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -59,17 +61,24 @@ namespace TranscriptionApp
     {
         //TODO
         private static string LANGUAGES_ENDPOINT = @"languages?api-version=3.0";
+        
         private static string endpoint_var = "TRANSLATOR_ENDPOINT";
         private const string region_var = "SPEECH_SERVICE_REGION";
+        private const string speech_endpoint_var = "SPEECH_ENDPOINT";
         private const string key_var = "SPEECH_TEXT_RESOURCE_KEY";
+
         private static readonly string endpoint = Environment.GetEnvironmentVariable(endpoint_var);
         private static readonly string region = Environment.GetEnvironmentVariable(region_var);
         private static readonly string resourceKey = Environment.GetEnvironmentVariable(key_var);
-        
+        private static readonly string speechEndpoint = Environment.GetEnvironmentVariable(speech_endpoint_var);
+
+
 
         public MainWindow()
         {
             this.InitializeComponent();
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
+
             Languages = GetLanguages().Result;
             langTocb.ItemsSource = Languages;
             langFromcb.ItemsSource = Languages;
@@ -82,8 +91,9 @@ namespace TranscriptionApp
 
             StopSpeechRecognitionButton.IsEnabled = false;
             SpeechRecognitionButton.IsEnabled = true;
-            infoBar.Message = "Enable Microphone before starting Starting Speech Recognition";
-            infoBar.Severity = InfoBarSeverity.Warning;
+            infoBar.Message = "Enable Microphone, then start or Choose a file for Speech Recognition";
+            infoBar.Severity = InfoBarSeverity.Informational;
+
         }
 
         public ObservableCollection<Services.Language> Languages { get; set; }
@@ -107,7 +117,9 @@ namespace TranscriptionApp
             catch (Exception)
             {
                 isMicAvailable = false;
+                EnableMicrophoneButton.IsChecked = false;
                 await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-microphone"));
+            
             }
             if (!isMicAvailable)
             {
@@ -121,6 +133,7 @@ namespace TranscriptionApp
                 infoBar.Message = "Microphone was enabled";
 
             }
+            
         }
         private async void StopSpeechRecognitionFromMicrophone_ButtonClicked(object sender, RoutedEventArgs e)
         {
@@ -135,6 +148,7 @@ namespace TranscriptionApp
                 stopRecognition.TrySetResult(0);
 
             }
+            NotifyUser("Choose File", NotifyType.CommandBarMessage);
         }
 
         private async void SpeechRecognitionFromMicrophone_ButtonClicked(object sender, RoutedEventArgs e)
@@ -144,9 +158,13 @@ namespace TranscriptionApp
             // Creates an instance of a speech config with specified subscription key and service region.
             // Replace with your own subscription key and service region (e.g., "westus").
             var config = SpeechConfig.FromSubscription(resourceKey, region);
+            //var config = SpeechConfig.FromEndpoint(resourceKey, region);
             //TODO: Work out issues with binding to a property
             SpeechRecognitionButton.IsEnabled = false;
             StopSpeechRecognitionButton.IsEnabled = true;
+            // Define the set of input spoken languages to detect
+            var autoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig.FromLanguages(new string[] { "en-US" });
+
             // </create_speech_configuration>
 
             // <skeleton_2>
@@ -157,7 +175,7 @@ namespace TranscriptionApp
                 // </skeleton_2>
                 // <create_speech_recognizer_1>
                 // Creates a speech recognizer using microphone as audio input.
-                using (var recognizer = new SpeechRecognizer(config))
+                using (var recognizer = new SpeechRecognizer(config, autoDetectSourceLanguageConfig))
                 {
                     await StartSpeechProcessing(recognizer).ConfigureAwait(false);
                 }
@@ -172,15 +190,17 @@ namespace TranscriptionApp
 
         private async Task StartSpeechProcessing(SpeechRecognizer recognizer)
         {
-
-
             StringBuilder sb = new StringBuilder();
             // The TaskCompletionSource to stop recognition.
             stopRecognition = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             // Subscribes to events.
+            recognizer.SpeechStartDetected += (s, e) =>
+            {
+                NotifyUser("Speech Detected ....", NotifyType.CommandBarMessage);
+            };
             recognizer.Recognizing += (s, e) =>
             {
-                // Console.WriteLine($"RECOGNIZING: Text={e.Result.Text}");
+                NotifyUser("Recognizing ....", NotifyType.CommandBarMessage);
                 sb.Clear();
             };
 
@@ -198,7 +218,8 @@ namespace TranscriptionApp
                 }
                 else if (e.Result.Reason == ResultReason.NoMatch)
                 {
-                    Console.WriteLine($"NOMATCH: Speech could not be recognized.");
+                    NotifyUser("NOMATCH: Speech could not be recognized.", NotifyType.StatusMessage);
+
                 }
             };
 
@@ -238,6 +259,8 @@ namespace TranscriptionApp
 
             };
 
+            
+
             // Update the UI
             NotifyUser(sb.ToString(), NotifyType.StatusMessage);
 
@@ -257,9 +280,10 @@ namespace TranscriptionApp
         private enum NotifyType
         {
             StatusMessage,
-            ErrorMessage
-        };
-
+            ErrorMessage,
+            CommandBarMessage,
+            InfoBar
+        }
         private void NotifyUser(string strMessage, NotifyType type)
         {
             // If called from the UI thread, then update immediately.
@@ -287,33 +311,43 @@ namespace TranscriptionApp
             switch (type)
             {
                 case NotifyType.StatusMessage:
-                    //StatusBorder.Background = new SolidColorBrush(Microsoft.UI.Colors.Green);
+                    StatusBlock.Text += string.IsNullOrEmpty(StatusBlock.Text) ? strMessage : "\n" + strMessage;
+                    infoBar.Message = "Updating Speech Recognition";
+                    infoBar.Severity = InfoBarSeverity.Success;
                     break;
                 case NotifyType.ErrorMessage:
-                    StatusBorder.Background = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                    infoBar.Message = strMessage;
+                    infoBar.Severity = InfoBarSeverity.Error;
+                    break;
+                case NotifyType.CommandBarMessage:
+                    commandBarText.Text = strMessage;
+                    break;
+                case NotifyType.InfoBar:
+                    infoBar.Message = strMessage;
+                    infoBar.Severity = InfoBarSeverity.Informational;
                     break;
             }
-            StatusBlock.Text += string.IsNullOrEmpty(StatusBlock.Text) ? strMessage : "\n" + strMessage;
-
+            
             StatusScroller.ScrollToVerticalOffset(StatusScroller.ExtentHeight);
             // Collapse the StatusBlock if it has no text to conserve real estate.
-            StatusBorder.Visibility = !string.IsNullOrEmpty(StatusBlock.Text) ? Visibility.Visible : Visibility.Collapsed;
+            //StatusBorder.Visibility = !string.IsNullOrEmpty(StatusBlock.Text) ? Visibility.Visible : Visibility.Collapsed;
             if (!string.IsNullOrEmpty(StatusBlock.Text))
             {
-                StatusBorder.Visibility = Visibility.Visible;
-                StatusPanel.Visibility = Visibility.Visible;
+                //StatusBorder.Visibility = Visibility.Visible;
+                ///StatusPanel.Visibility = Visibility.Visible;
             }
             else
             {
-                StatusBorder.Visibility = Visibility.Collapsed;
-                StatusPanel.Visibility = Visibility.Collapsed;
+                ///StatusBorder.Visibility = Visibility.Collapsed;
+                //StatusPanel.Visibility = Visibility.Collapsed;
             }
             //Translate
-            if (!String.IsNullOrEmpty(strMessage))
+            if ((!String.IsNullOrEmpty(strMessage)) && NotifyType.StatusMessage  == type)
             {
                 string translatedTxt = await TranslateAsync(strMessage);
                 TranslateBlock.Text += string.IsNullOrEmpty(TranslateBlock.Text) ? translatedTxt : translatedTxt;
                 TranslateScroller.ScrollToVerticalOffset(TranslateScroller.ExtentHeight);
+                
             }
 
             // Raise an event if necessary to enable a screen reader to announce the status update.
@@ -350,8 +384,10 @@ namespace TranscriptionApp
             Services.LanguageResult deserializedOutput = null;
 
             string url = endpoint + LANGUAGES_ENDPOINT;
+            //Uncomment for obtaining Languages dynamically
+            //otherwise the languages will be populated from the json file
             //check if the environment variable is set
-            if (!String.IsNullOrEmpty(endpoint))
+            /*if (!String.IsNullOrEmpty(endpoint))
             {
                 using (var client = new HttpClient())
                 using (var request = new HttpRequestMessage())
@@ -375,7 +411,7 @@ namespace TranscriptionApp
                     }
 
                 }
-            }
+            }*/
 
 
             if(String.IsNullOrEmpty(result))
@@ -407,17 +443,7 @@ namespace TranscriptionApp
         }
         private async void PickAFileButton_Click(object sender, RoutedEventArgs e)
         {
-
-            FileOpenPicker openPicker = new FileOpenPicker();
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            openPicker.FileTypeFilter.Add(".wav");
-            openPicker.FileTypeFilter.Add(".mp4");
-            openPicker.FileTypeFilter.Add(".mp3");
-
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
-            StorageFile file = await openPicker.PickSingleFileAsync();
+            StorageFile file = await GetFileFromPicker(".wav", ".mp4", ".mp3" );
             if (file != null)
             {
                 // The StorageFile has read/write access to the picked file.
@@ -433,6 +459,60 @@ namespace TranscriptionApp
 
             }
         }
+        private async void UseStorageButton_Click(object sender, RoutedEventArgs e)
+        {
+            //Follow Steps:
+            //https://learn.microsoft.com/en-us/azure/ai-services/speech-service/batch-transcription-audio-data?tabs=portal#enable-system-assigned-managed-identity-for-the-speech-resource
+
+        }
+
+        private async void SaveFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            StorageFile file = await GetFileFromPicker(".txt");
+            if (file != null)
+            {
+                // The StorageFile has read/write access to the picked file.
+                // See the FileAccess sample for code that uses a StorageFile to read and write.
+                infoBar.Severity = InfoBarSeverity.Informational;
+                infoBar.Message = "Speech Recognition for file:" + file.Path;
+                if (DispatcherQueue.HasThreadAccess)//Dispatcher.HasThreadAccess)
+                {
+                    await System.IO.File.AppendAllTextAsync(file.Path, $"Status: {StatusBlock.Text} \n Translation: \n {TranslateBlock.Text} \n", Encoding.UTF8);
+                }
+                else
+                {
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        System.IO.File.AppendAllTextAsync(file.Path, $"Status: {StatusBlock.Text} \n Translation: \n {TranslateBlock.Text} \n", Encoding.UTF8);
+                    });
+                    //var task = Window.Current.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => UpdateStatus(strMessage, type));
+                }
+
+            }
+            else
+            {
+                infoBar.Severity = InfoBarSeverity.Warning;
+                infoBar.Message = "Operation cancelled.";
+
+            }
+        }
+
+        private async Task<StorageFile> GetFileFromPicker(params string[] fileNames)
+        {
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.ViewMode = PickerViewMode.Thumbnail;
+            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            foreach(string f in fileNames)
+            {
+                openPicker.FileTypeFilter.Add(f);
+            }
+
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
+            StorageFile file = await openPicker.PickSingleFileAsync();
+            return file;
+        }
+
         async Task SpeechRecognitionFromFile(string filePath)
         {
 
@@ -440,7 +520,17 @@ namespace TranscriptionApp
             //install GStreamer and use PullAudioInputStream or PushAudioInputStream.
             //For more information, see How to use compressed input audio.
             //https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-use-codec-compressed-audio-input-streams?tabs=windows%2Cdebian%2Cjava-android%2Cterminal&pivots=programming-language-csharp
-            var config = SpeechConfig.FromSubscription(resourceKey, region);
+
+            var config = SpeechConfig.FromEndpoint(new Uri(speechEndpoint), resourceKey);
+
+            // Set the mode of input language detection to either "AtStart" (the default) or "Continuous".
+            // Please refer to the documentation of Language ID for more information.
+            // https://aka.ms/speech/lid?pivots=programming-language-csharp
+            config.SetProperty(PropertyId.SpeechServiceConnection_LanguageIdMode, "Continuous");
+
+            //TODO
+            // Define the set of input spoken languages to detect
+            var autoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig.FromLanguages(new string[] { "en-US", ConvertFromLanguage.ShortName });
             PullAudioInputStream pullStream = null;
 
             //MP3/4 Files
@@ -458,6 +548,10 @@ namespace TranscriptionApp
                     try
                     {
                         await StartSpeechProcessing(recognizer).ConfigureAwait(false);
+                        if (stopRecognition != null)
+                        {
+                            stopRecognition.TrySetResult(0);
+                        }
 
                     }
                     catch (Exception ex)
@@ -467,8 +561,8 @@ namespace TranscriptionApp
                     }
                 }
             }
-
-
+            NotifyUser("Choose File", NotifyType.CommandBarMessage);
+            NotifyUser($"Speech Recognition completed for {filePath}", NotifyType.InfoBar);
 
         }
     }
