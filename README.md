@@ -18,6 +18,7 @@ Solution uses Translator and Speech services. The current solution pulls values 
  
 #### Environment Variables
 Environment variables need to be configured for connection to Translator and Speech services. 
+
 **Translator**
 - **TRANSLATOR_SERVICE_REGION**
 - **TRANSLATOR_TEXT_RESOURCE_KEY**
