@@ -17,6 +17,7 @@ Solution uses Translator and Speech services. The current solution pulls values 
     - For MP4 files, dependencies need to be installed. [For more information](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-use-codec-compressed-audio-input-streams?tabs=windows%2Cdebian%2Cjava-android%2Cterminal&pivots=programming-language-csharp)
  
 #### Environment Variables
+Environment variables need to be configured for connection to Translator and Speech services. 
 **Translator**
 - **TRANSLATOR_SERVICE_REGION**
 - **TRANSLATOR_TEXT_RESOURCE_KEY**
