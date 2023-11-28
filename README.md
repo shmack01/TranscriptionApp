@@ -3,10 +3,10 @@ WinUI 3  Windows Desktop Application for Speech-to-Text and Translation
 
 **TODO LIST**
 - Add feature for saving to a file
-- Implement parsing MP3/4 files - **COMPLETED** Tested with v1.22.6
+- Implement parsing MP3/4 files - **COMPLETED AND TESTED** Tested with v1.22.6
 - Current parsing audio files status
-- Test with large wav files
-- [Optional] 
+- Add code for large wav files
+- [Optional] Develop with Transcription Batch if needed. 
 
 ## Get Started
 Solution uses Translator and Speech services. The current solution pulls values from Environment Variables. This will need to be updated for more secure method
@@ -33,12 +33,16 @@ Environment variables need to be configured for connection to Translator and Spe
 
 
 ## Deployment
-Ensure the following lines are added to the **PropertyGroup** in the csproj file and then publish to folder. This will deploy all the Windows App SDK and .NET dlls with the the application. 
 
 - [Prerequisites](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/deploy-unpackaged-apps#prerequisites)
     - .net 6 runtime
     - Windows App SDK runtime
     - Microsoft Visual C++ Redistributable
+
+## Additional Information
+Additional information to help with development and the deciphering code. 
+### Development
+For self containment during development, ensure the following lines are added to the **PropertyGroup** in the csproj file and then publish to folder. This will deploy all the Windows App SDK and .NET dlls with the the application. 
 ```
 <SelfContained>true</SelfContained>
 <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
