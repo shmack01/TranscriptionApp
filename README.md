@@ -25,9 +25,9 @@ Environment variables need to be configured for connection to Translator and Spe
 - **TRANSLATOR_ENDPOINT** - with trailing slash, exactly like what is in the portal. e.g. https://{name}.cognitiveservices.azure.us/
 
 **Speech**
-- **SPEECH_SERVICE_REGION**
+- **SPEECH_SERVICE_REGION** - usgovvirginia
 - **SPEECH_TEXT_RESOURCE_KEY**
-- **SPEECH_ENDPOINT**
+- **SPEECH_ENDPOINT** - wss://usgovvirginia.stt.speech.azure.us/speech/universal/v2
 
 
 
