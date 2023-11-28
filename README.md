@@ -33,11 +33,11 @@ Environment variables need to be configured for connection to Translator and Spe
 
 
 ## Deployment
-
+The following software components need to be installed before running the application. The components are listed in order it was tested. 
 - [Prerequisites](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/deploy-unpackaged-apps#prerequisites)
-    - .net 6 runtime
-    - Windows App SDK runtime
+    - .Net 6 runtime
     - Microsoft Visual C++ Redistributable
+    - Windows App SDK runtime
 
 ## Additional Information
 Additional information to help with development and the deciphering code. 
