@@ -5,7 +5,8 @@ WinUI 3  Windows Desktop Application for Speech-to-Text and Translation
 - Add feature for saving to a file
 - Implement parsing MP3/4 files - **COMPLETED** Tested with v1.22.6
 - Current parsing audio files status
-- Test with large wav files, incorporate batch.
+- Test with large wav files
+- [Optional] 
 
 ## Get Started
 Solution uses Translator and Speech services. The current solution pulls values from Environment Variables. This will need to be updated for more secure method
@@ -25,9 +26,9 @@ Environment variables need to be configured for connection to Translator and Spe
 - **TRANSLATOR_ENDPOINT** - with trailing slash, exactly like what is in the portal. e.g. https://{name}.cognitiveservices.azure.us/
 
 **Speech**
-- **SPEECH_SERVICE_REGION** - usgovvirginia
+- **SPEECH_SERVICE_REGION** - (e.g. usgovvirginia)
 - **SPEECH_TEXT_RESOURCE_KEY**
-- **SPEECH_ENDPOINT** - wss://usgovvirginia.stt.speech.azure.us/speech/universal/v2
+- **SPEECH_ENDPOINT** - (e.g. wss://usgovvirginia.stt.speech.azure.us/speech/universal/v2)
 
 
 
