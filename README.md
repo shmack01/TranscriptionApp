@@ -6,6 +6,7 @@ WinUI 3  Windows Desktop Application for Speech-to-Text and Translation
 - Implement parsing MP3/4 files - **COMPLETED AND TESTED v1.22.6**
 - Current parsing audio files status
 - Add code for large wav files
+- Modify Code to use Key Vault
 - [Optional] Develop with Transcription Batch if needed. 
 
 ## Get Started
