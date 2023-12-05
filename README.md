@@ -30,17 +30,30 @@ Environment variables need to be configured for connection to Translator and Spe
 - **SPEECH_TEXT_RESOURCE_KEY**
 - **SPEECH_ENDPOINT** - (e.g. wss://usgovvirginia.stt.speech.azure.us/speech/universal/v2)
 
+```
+[System.Environment]::SetEnvironmentVariable('TRANSLATOR_SERVICE_REGION','usgovvirginia',[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('TRANSLATOR_TEXT_RESOURCE_KEY','****',[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('TRANSLATOR_ENDPOINT','https://<name of service>.cognitiveservices.azure.us/',[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('SPEECH_SERVICE_REGION','usgovvirginia',[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('SPEECH_TEXT_RESOURCE_KEY','*****',[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('SPEECH_ENDPOINT','wss://usgovvirginia.stt.speech.azure.us/speech/universal/v2',[System.EnvironmentVariableTarget]::Machine)
 
+[System.Environment]::SetEnvironmentVariable('GST_PLUGIN_PATH','C:\gstreamer\1.0\msvc_x86_64\lib\gstreamer-1.0',[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('GSTREAMER_ROOT_X86_64','C:\gstreamer\1.0\msvc_x86_64',[System.EnvironmentVariableTarget]::Machine)
+
+# Then Add Path variable
+
+```
 
 ## Deployment
 The following software components need to be installed before running the application. The components are listed in order it was tested. 
 - [Prerequisites](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/deploy-unpackaged-apps#prerequisites)
-    - .Net 6 runtime
+    - .Net 6 Runtime
     - Microsoft Visual C++ Redistributable
     - Windows App SDK runtime
 
 ## Additional Information
-Additional information to help with development and the deciphering code. 
+Additional information to help with development and understanding the code. 
 ### Development
 For self containment during development, ensure the following lines are added to the **PropertyGroup** in the csproj file and then publish to folder. This will deploy all the Windows App SDK and .NET dlls with the the application. 
 ```
