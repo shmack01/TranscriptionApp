@@ -155,10 +155,17 @@ namespace TranscriptionApp
         {
             // </skeleton_1>
             // <create_speech_configuration>
+            var config = SpeechConfig.FromEndpoint(new Uri(speechEndpoint), resourceKey);
+
+            // Set the mode of input language detection to either "AtStart" (the default) or "Continuous".
+            // Please refer to the documentation of Language ID for more information.
+            // https://aka.ms/speech/lid?pivots=programming-language-csharp
+            config.SetProperty(PropertyId.SpeechServiceConnection_LanguageIdMode, "Continuous");
+
             // Creates an instance of a speech config with specified subscription key and service region.
             // Replace with your own subscription key and service region (e.g., "westus").
-            var config = SpeechConfig.FromSubscription(resourceKey, region);
-            //var config = SpeechConfig.FromEndpoint(resourceKey, region);
+            //Use this only for commerical endpoing: var config = SpeechConfig.FromSubscription(resourceKey, region);
+
             //TODO: Work out issues with binding to a property
             SpeechRecognitionButton.IsEnabled = false;
             StopSpeechRecognitionButton.IsEnabled = true;
